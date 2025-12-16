@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, jsonify
 from backend.llm import generate
-import PyPDF2
 
 app = Flask(__name__)
 
@@ -38,21 +37,20 @@ def summary_post():
         "output": output
     }), 200
 
-@app.route('/rewritetone',methods=['POST'])
+@app.route('/rewrite-tone',methods=['POST'])
 def rewrite():
     data=request.get_json(silent=True) or {}
     user_input=data.get('user')
     tone=data.get('tone')
     prompt = f"Rewrite the {user_input} in {tone} tone without changing its meaning" 
-    output = generate(prompt)
-    #  ... 
+    output = generate(prompt) 
     return jsonify({
         "input": user_input,
         "tone":tone,
         "output": output
     }), 200
 # /-----------------PAGES-----------------/
-@app.route('/keypoints',methods=['POST'])
+@app.route('/key-points',methods=['POST'])
 def points():
     data=request.get_json(silent=True) or {}
     user_input=data.get('user')
@@ -66,23 +64,15 @@ def points():
         "key_points":points 
     }),200
 
-@app.route('/learningcheck',methods=['POST'])
+@app.route('/learning-check',methods=['POST'])
 def learn():
     #data=request.get_json(silent=True) or {}
     level=request.form.get('level')
     ques=request.form.get('ques')
-    file=request.files.get('file')
+    text=request.form.get('text')
 
-    pdf_text = ""
-    if file:
-        pdf_reader = PyPDF2.PdfReader(file)
-        for page in pdf_reader.pages:
-            pdf_text += page.extract_text()
-    # --- FIX END ---
-
-    # Pass the EXTRACTED TEXT (pdf_text), not the file object
     prompt =  f"""
-    Analyze the following text: {pdf_text} 
+    Analyze the following text: {text} 
     Act as a rigorous teacher. 
     Ask exactly {ques} questions based on the {level} difficulty level. 
     The questions must strictly test reasoning and understanding of the text provided. 
@@ -97,12 +87,12 @@ def learn():
         "Questions":points 
     }),200
 
-@app.route('/analyzeuseractivity',methods=['POST'])
+@app.route('/analyze-user-activity',methods=['POST'])
 def analyze():
     data=request.get_json(silent=True) or {}
-    user_data=data.get('user_data')
+    users_data=data.get('users_data')
     query=data.get('query')
-    prompt=f"{user_data} is certain ,parse the {user_data} with natural language query,identify the {query} and retrieve only the field which is asked,without listing everything "
+    prompt=f"{users_data} is certain ,parse the {users_data} with natural language query,identify the {query} and retrieve only the field which is asked,without listing everything "
     output=generate(prompt)
     points=[p.strip() for p in output.split("\n") if p.strip()]
     return jsonify({
