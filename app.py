@@ -60,13 +60,13 @@ def points():
     points=[p.strip() for p in output.split("\n") if p.strip()]
 
     return jsonify({
-        "Total_points_requested":count,
+        "total_points_requested":count,
         "key_points":points 
     }),200
 
 @app.route('/learning-check',methods=['POST'])
 def learn():
-    #data=request.get_json(silent=True) or {}
+    data=request.get_json(silent=True) or {}
     level=request.form.get('level')
     ques=request.form.get('ques')
     text=request.form.get('text')
@@ -82,9 +82,9 @@ def learn():
     points=[p.strip() for p in output.split("\n") if p.strip()]
 
     return jsonify({
-        "Difficulty_Level":level,
-        "Number_of_Questions":ques,
-        "Questions":points 
+        "difficulty_Level":level,
+        "number_of_Questions":ques,
+        "questions":points 
     }),200
 
 @app.route('/analyze-user-activity',methods=['POST'])
@@ -92,11 +92,14 @@ def analyze():
     data=request.get_json(silent=True) or {}
     users_data=data.get('users_data')
     query=data.get('query')
-    prompt=f"{users_data} is certain ,parse the {users_data} with natural language query,identify the {query} and retrieve only the field which is asked,without listing everything "
+    prompt=f"""{users_data} is certain ,parse the {users_data} with natural language query,identify the {query} and retrieve only the field which is asked,without listing everything return 
+    the response strictly in numerical order (1,2,3....).
+    Do not add any extra sentences ,explanation or commentary.
+    output only the numbered items"""
     output=generate(prompt)
     points=[p.strip() for p in output.split("\n") if p.strip()]
     return jsonify({
-        "Query":query,
+        "query":query,
         "matched_role":points
     })
 @app.route('/')
